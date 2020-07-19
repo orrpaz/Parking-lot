@@ -34,5 +34,5 @@ license_plate
 
 Run in Shell:
 ```bash
-python3 main.py <path to directory> 
+python main.py <path to directory> 
 ```
