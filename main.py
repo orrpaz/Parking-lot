@@ -1,12 +1,13 @@
 import argparse
 import os
 import ocrspace
-import DB
+import Database
 import logging
 import re
+from Configuration import readconfig
 
-# directory = "resources/negative"
-api_key = 'be5e6db88388957'
+
+api_key = readconfig().get("api_key")
 public_transport_last_digits = ['25', '26']
 last_digits_prohibited = ['85', '86', '87', '88', '89', '00']
 car_plate_lens_prohibited = [7, 8]
@@ -35,24 +36,24 @@ def edit_license_plate(car_details):
 
 
 def is_valid_to_park(car_plate):
-    info = "allow to park"
+    info = "Allow to park"
     allow = True
     if is_military_and_law(car_plate):
         allow = False
         info = "Military and law"
     elif is_gas_vehicle(car_plate):
         allow = False
-        info = "operated by gas"
+        info = "Operated by gas"
     elif is_last_two_digits_prohibit(car_plate):
         allow = False
-        info = "last digits are 85/86/87/88/89/00"
+        info = "Last digits are 85/86/87/88/89/00"
     elif is_public_transport(car_plate):
         allow = False
         info = "Public transportation"
     logger.info(car_plate + info)
     query = "INSERT INTO parking.log (lisence,allowed,info) VALUES (%s,%s,%s)"
     val = (car_plate, str(allow), info)
-    DB.insert_db(query, val)
+    Database.insert_db(query, val)
 
 
 def is_military_and_law(car_details):
@@ -63,7 +64,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('pictures_directory', type=str)
     args = parser.parse_args()
-    DB.create_db()
+    Database.create_db()
     api = ocrspace.API(api_key=api_key)
     path = args.pictures_directory
     for filename in os.listdir(path):
