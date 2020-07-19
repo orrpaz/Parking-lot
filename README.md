@@ -27,6 +27,9 @@ Insert your user data of MySQLServer (**user and password**) and API KEY that yo
 The program get as an argument path to directory which contains images for
 decoding.
 I added images as an example in resource directory.
+Assuming that each license plate's vehicles enters once.
+I didn't support delete from database.
+license_plate
 
 Run in Shell:
 ```bash

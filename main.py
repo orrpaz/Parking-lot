@@ -10,54 +10,59 @@ from Configuration import readconfig
 api_key = readconfig().get("api_key")
 public_transport_last_digits = ['25', '26']
 last_digits_prohibited = ['85', '86', '87', '88', '89', '00']
-car_plate_lens_prohibited = [7, 8]
+plate_lens = [7, 8]
 divisor = 7
-logger = logging.getLogger()
+logging.basicConfig(filename='parking_info.log', level=logging.INFO)
 
 
-def is_public_transport(car):
+def is_public_transport(license_plate):
     # check 2 last digit, return true if the last digit is 25/26
-    return car[-2:] in public_transport_last_digits
+    return license_plate[-2:] in public_transport_last_digits
 
 
-def is_last_two_digits_prohibit(car):
-    return len(car) == 7 and car[-2:] in last_digits_prohibited
+def is_last_two_digits_prohibit(license_plate):
+    return len(license_plate) == 7 and license_plate[-2:] in last_digits_prohibited
 
 
-def is_gas_vehicle(car):
-    car = [int(digit) for digit in car]
-    return len(car) in car_plate_lens_prohibited and sum(car) % divisor == 0
+def is_gas_vehicle(license_plate):
+    license_plate = [int(digit) for digit in license_plate]
+    return len(license_plate) in plate_lens and sum(license_plate) % divisor == 0
 
 
-def edit_license_plate(car_details):
-    car_details = car_details.strip()
-    car_details = re.sub('[,\'\\n".\\r;:!\s+?_\-—•]', '', car_details)
-    return car_details
+def edit_license_plate(license_plate):
+    license_plate = license_plate.split("\r\n")[0]
+    license_plate = re.sub('[,\'\\n".\\r;:!\s+?_\-—•]', '', license_plate)
+    return license_plate
 
 
-def is_valid_to_park(car_plate):
+def is_valid_to_park(license_plate):
+    # assume that there is one reason to prohibit.
+    # if vehicles is public transportation and operated by gas, the reason will written to DB and log depends
+    # on the following order: military_and_law,Public transportation, Operated by gas,
+    # Last digits are 85/86/87/88/89/00
+
     info = "Allow to park"
     allow = True
-    if is_military_and_law(car_plate):
+    if is_military_and_law(license_plate):
         allow = False
         info = "Military and law"
-    elif is_gas_vehicle(car_plate):
-        allow = False
-        info = "Operated by gas"
-    elif is_last_two_digits_prohibit(car_plate):
-        allow = False
-        info = "Last digits are 85/86/87/88/89/00"
-    elif is_public_transport(car_plate):
+    elif is_public_transport(license_plate):
         allow = False
         info = "Public transportation"
-    logger.info(car_plate + info)
+    elif is_gas_vehicle(license_plate):
+        allow = False
+        info = "Operated by gas"
+    elif is_last_two_digits_prohibit(license_plate):
+        allow = False
+        info = "Last digits are 85/86/87/88/89/00"
+    logging.info(license_plate + " " + info)
     query = "INSERT INTO parking.log (lisence,allowed,info) VALUES (%s,%s,%s)"
-    val = (car_plate, str(allow), info)
+    val = (license_plate, str(allow), info)
     Database.insert_db(query, val)
 
 
-def is_military_and_law(car_details):
-    return re.search("[a-zA-Z]", car_details)
+def is_military_and_law(license_plate):
+    return re.search("[a-zA-Z]", license_plate)
 
 
 def main():
@@ -69,14 +74,14 @@ def main():
     path = args.pictures_directory
     for filename in os.listdir(path):
         if filename.endswith(('.jpg', '.jpeg', '.png', '.pdf', '.gif', '.bmp', '.tif')):
-            car_plate = api.ocr_file(path + "/" + filename)
-            car_plate = edit_license_plate(car_plate)
-            if car_plate:
-                is_valid_to_park(car_plate)
+            license_plate = api.ocr_file(path + "/" + filename)
+            license_plate = edit_license_plate(license_plate)
+            if license_plate:
+                is_valid_to_park(license_plate)
             else:
-                logger.info("Can't extract information from image")
+                logging.info("Can't extract information from image")
         else:
-            logger.info("Can't extract information from file")
+            logging.info("Can't extract information from file")
 
 
 if __name__ == "__main__":
