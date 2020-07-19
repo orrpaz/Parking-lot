@@ -30,7 +30,7 @@ def is_gas_vehicle(car):
 
 def edit_license_plate(car_details):
     car_details = car_details.strip()
-    car_details = re.sub('[,\'\\n".\\r;:!\s+?_\-—]', '', car_details)
+    car_details = re.sub('[,\'\\n".\\r;:!\s+?_\-—•]', '', car_details)
     return car_details
 
 
