@@ -12,10 +12,12 @@ Use the package manager pip to install
 ```bash
 pip install MySQL-connector-python
 ```
-Also, you need to install Ocrspace's SDK to use Ocrspace API.
+Also, you need to install Ocrspace's SDK and requests package to use Ocrspace API .
 ```bash
 pip install ocrspace
+pip install requests
 ```
+
 After you install this packages, yuo will need to genatrate OCI API KEY From
 [ocrspace website](https://ocr.space/ocrapi).
 
