@@ -17,7 +17,7 @@ Also, you need to install Ocrspace's SDK to use Ocrspace API.
 pip install ocrspace
 ```
 after you install this packages, yuo will need to genatrate OCI API KEY From
-[ocrspace website](https://ocr.space/ocrapi)
+[ocrspace website](https://ocr.space/ocrapi).
 
 Insert your user data of MySQLServer (**user and password**) and API KEY that you genarate to **config.properties**
 
